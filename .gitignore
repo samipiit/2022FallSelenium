@@ -3,6 +3,7 @@
 .idea
 *.iml
 /out
+target
 
 # Compiled class file
 *.class
