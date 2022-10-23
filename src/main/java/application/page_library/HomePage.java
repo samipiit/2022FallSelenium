@@ -10,6 +10,9 @@ public class HomePage extends Base {
     @FindBy (className = "login")
     public WebElement signInButton;
 
+    @FindBy (css = ".shopping_cart > a")
+    public WebElement shoppingCartButton;
+
     public HomePage() {
         PageFactory.initElements(driver, this);
     }
@@ -18,5 +21,11 @@ public class HomePage extends Base {
         clickElement(signInButton);
 
         return new SignInPage();
+    }
+
+    public ShoppingCartPage clickShoppingCartButton() {
+        clickElement(shoppingCartButton);
+
+        return new ShoppingCartPage();
     }
 }

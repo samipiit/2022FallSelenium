@@ -8,10 +8,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.FluentWait;
-import org.openqa.selenium.support.ui.Wait;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.*;
 import org.testng.annotations.*;
 
 import java.time.Duration;
@@ -30,7 +27,8 @@ public class Base {
         prop = Config.loadProperties();
     }
 
-    @BeforeTest
+    @Parameters ({"browser"})
+    @BeforeMethod (alwaysRun = true)
     public void initDriver(@Optional("chrome") String browser) {
         if (browser.equalsIgnoreCase("chrome")) {
             WebDriverManager.chromedriver().setup();
@@ -54,7 +52,7 @@ public class Base {
         driver.manage().deleteAllCookies();
     }
 
-    @AfterTest
+    @AfterMethod (alwaysRun = true)
     public void tearDown() {
         driver.close();
 
@@ -84,5 +82,24 @@ public class Base {
         }
 
         return text;
+    }
+
+    public boolean isElementDisplayed(WebElement element) {
+        wait.until(ExpectedConditions.visibilityOf(element));
+
+        return element.isDisplayed();
+    }
+
+    public void selectByVisibleText(WebElement element, String text) {
+        Select select = new Select(element);
+        select.selectByVisibleText(text);
+
+        wait.until(ExpectedConditions.textToBePresentInElement(element, text));
+
+    }
+
+    public void selectByValue(WebElement element, String value) {
+        Select select = new Select(element);
+        select.selectByValue(value);
     }
 }
