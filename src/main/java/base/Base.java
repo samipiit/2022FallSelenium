@@ -24,7 +24,11 @@ public class Base {
     public static WebDriver driver;
     public static WebDriverWait wait;
     public static Wait<WebDriver> flWait;
-    public static Properties prop = Config.loadProperties();
+    public static Properties prop;
+
+    public Base() {
+        prop = Config.loadProperties();
+    }
 
     @BeforeTest
     public void initDriver(@Optional("chrome") String browser) {
@@ -40,12 +44,12 @@ public class Base {
         }
 
 //        driver.manage().timeouts().implicitlyWait(12, TimeUnit.SECONDS);
-        wait = new WebDriverWait(driver, 10);
+        wait = new WebDriverWait(driver, Long.parseLong(prop.getProperty("driver_timeout")));
         flWait = new FluentWait<>(driver)
-                .withTimeout(Duration.ofSeconds(10))
-                .pollingEvery(Duration.ofMillis(300))
+                .withTimeout(Duration.ofSeconds(Long.parseLong(prop.getProperty("driver_timeout"))))
+                .pollingEvery(Duration.ofMillis(Long.parseLong(prop.getProperty("driver_polling_interval"))))
                 .ignoring(NoSuchElementException.class);
-        driver.get(Base.getURL());
+        driver.get(prop.getProperty("url"));
         driver.manage().window().maximize();
         driver.manage().deleteAllCookies();
     }
@@ -57,16 +61,6 @@ public class Base {
         if (!(driver instanceof FirefoxDriver)) {
             driver.quit();
         }
-    }
-
-    public static String getURL() {
-        String url = "";
-
-        if (prop != null) {
-            url = prop.getProperty("url");
-        }
-
-        return url;
     }
 
     public void clickElement(WebElement element) {
