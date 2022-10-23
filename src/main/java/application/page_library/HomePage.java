@@ -1,9 +1,11 @@
 package application.page_library;
 
 import base.Base;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.List;
 
@@ -28,12 +30,13 @@ public class HomePage extends Base {
         PageFactory.initElements(driver, this);
     }
 
+
     public void inputSearchText(String searchTerm) {
-        searchBar.sendKeys(searchTerm);
+        sendKeysToElement(searchBar, searchTerm);
     }
 
     public void clickSearchButton() {
-        searchButton.click();
+        clickElement(searchButton);
     }
 
     public SearchResultsPage doSearch(String searchTerm) {
@@ -54,5 +57,7 @@ public class HomePage extends Base {
             personalizedEventsCarouselNextButton.click();
         }
     }
+
+
 
 }
