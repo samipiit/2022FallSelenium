@@ -144,6 +144,12 @@ public class Base {
         element.sendKeys(keys);
     }
 
+    public void clearSendKeysToElement(WebElement element, String keys) {
+        wait.until(ExpectedConditions.visibilityOf(element));
+        element.clear();
+        element.sendKeys(keys);
+    }
+
     public String getTextFromElement(WebElement element) {
         String text = "";
 
