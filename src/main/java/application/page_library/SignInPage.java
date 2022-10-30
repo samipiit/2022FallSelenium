@@ -1,6 +1,6 @@
 package application.page_library;
 
-import base.Base;
+import application.shared.SharedStepsUI;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
@@ -8,7 +8,7 @@ import org.openqa.selenium.support.PageFactory;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
-public class SignInPage extends Base {
+public class SignInPage extends SharedStepsUI {
 
     @FindBy (id = "email_create")
     public WebElement registrationEmailTextBox;

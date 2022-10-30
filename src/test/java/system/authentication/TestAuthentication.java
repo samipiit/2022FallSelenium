@@ -10,6 +10,7 @@ import org.testng.annotations.Test;
 import utils.DataFaker;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.Random;
 
 public class TestAuthentication extends Base {
@@ -18,14 +19,14 @@ public class TestAuthentication extends Base {
     public void testNavigationToLoginPage() {
         HomePage homePage = new HomePage();
 
-        Assert.assertTrue(isElementDisplayed(homePage.clickSignInButton().signInButton));
+        Assert.assertTrue(isElementDisplayed(homePage.systemBar.clickSignInButton().signInButton));
     }
 
     @Test (groups = {"authentication", "smoke"})
     public void testLogin() {
         HomePage homePage = new HomePage();
 
-        AccountPage accountPage = homePage.clickSignInButton()
+        AccountPage accountPage = homePage.systemBar.clickSignInButton()
                 .login(prop.getProperty("username"), prop.getProperty("password"));
 
         String expectedAccountName = "QA Engineer";
@@ -56,9 +57,9 @@ public class TestAuthentication extends Base {
     19. Click "Register" button
      */
     @Test
-    public void testRegisterNewAccount() throws AWTException {
+    public void testRegisterNewAccount() throws AWTException, IOException {
         HomePage homePage = new HomePage();
-        SignInPage signInPage = homePage.clickSignInButton();
+        SignInPage signInPage = homePage.systemBar.clickSignInButton();
 
         DataFaker faker = new DataFaker();
         String emailAddress = faker.email();
@@ -66,8 +67,10 @@ public class TestAuthentication extends Base {
 
         RegistrationFormPage registration = signInPage.clickCreateAnAccountButton();
 
-        String firstName = faker.firstName();
-        String lastName = faker.lastName();
+        String[] testData = excel.readStringArray(testDataFilePath, "TestRegisterNewAccount");
+
+        String firstName = testData[0];
+        String lastName = testData[1];
         String password = faker.password();
         int dobDay = new Random().nextInt(28);
         int dobMonth = 2;

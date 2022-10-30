@@ -1,30 +1,64 @@
 package base;
 
+import com.relevantcodes.extentreports.ExtentReports;
+import com.relevantcodes.extentreports.ExtentTest;
+import com.relevantcodes.extentreports.LogStatus;
 import config.Config;
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import listeners.DriverEventListener;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.io.FileHandler;
+import org.openqa.selenium.support.events.EventFiringWebDriver;
 import org.openqa.selenium.support.ui.*;
+import org.testng.ITestContext;
+import org.testng.ITestResult;
 import org.testng.annotations.*;
+import reporting.ExtentManager;
+import reporting.ExtentTestManager;
+import utils.ExcelReader;
 
+import java.io.File;
+import java.lang.reflect.Method;
 import java.time.Duration;
-import java.time.temporal.TemporalUnit;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
 public class Base {
 
+    public static WebDriver webDriver;
     public static WebDriver driver;
+    public static ExtentReports extent;
     public static WebDriverWait wait;
     public static Wait<WebDriver> flWait;
     public static Properties prop;
+    public static ExcelReader excel;
+    public static String testDataFilePath;
 
     public Base() {
         prop = Config.loadProperties();
+        excel = new ExcelReader();
+        testDataFilePath = System.getProperty("user.dir") + File.separator + "src" + File.separator +
+                "test" + File.separator + "resources" + File.separator + "test_data.xlsx";
+    }
+
+    @BeforeSuite(alwaysRun = true)
+    public void reportSetup(ITestContext context) {
+        ExtentManager.setOutputDirectory(context);
+        extent = ExtentManager.getInstance();
+    }
+
+    @BeforeMethod(alwaysRun = true)
+    public void reportInit(Method method) {
+        String className = method.getDeclaringClass().getSimpleName();
+        String methodName = method.getName();
+
+        ExtentTestManager.startTest(methodName);
+        ExtentTestManager.getTest().assignCategory(className);
     }
 
     @Parameters ({"browser"})
@@ -32,21 +66,25 @@ public class Base {
     public void initDriver(@Optional("chrome") String browser) {
         if (browser.equalsIgnoreCase("chrome")) {
             WebDriverManager.chromedriver().setup();
-            driver = new ChromeDriver();
+            webDriver = new ChromeDriver();
         } else if (browser.equalsIgnoreCase("firefox")) {
             WebDriverManager.firefoxdriver().setup();
-            driver = new FirefoxDriver();
+            webDriver = new FirefoxDriver();
         } else if (browser.equalsIgnoreCase("edge")) {
             WebDriverManager.edgedriver().setup();
-            driver = new EdgeDriver();
+            webDriver = new EdgeDriver();
         }
 
-//        driver.manage().timeouts().implicitlyWait(12, TimeUnit.SECONDS);
+        EventFiringWebDriver eventDriver = new EventFiringWebDriver(webDriver);
+        DriverEventListener driverEventListener = new DriverEventListener();
+        driver = eventDriver.register(driverEventListener);
+
         wait = new WebDriverWait(driver, Long.parseLong(prop.getProperty("driver_timeout")));
         flWait = new FluentWait<>(driver)
                 .withTimeout(Duration.ofSeconds(Long.parseLong(prop.getProperty("driver_timeout"))))
                 .pollingEvery(Duration.ofMillis(Long.parseLong(prop.getProperty("driver_polling_interval"))))
                 .ignoring(NoSuchElementException.class);
+
         driver.get(prop.getProperty("url"));
         driver.manage().window().maximize();
         driver.manage().deleteAllCookies();
@@ -59,6 +97,36 @@ public class Base {
         if (!(driver instanceof FirefoxDriver)) {
             driver.quit();
         }
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void afterEachTestMethod(ITestResult testResult, @Optional("true") String driverConfigEnabled) {
+        ExtentTest test = ExtentTestManager.getTest();
+        String testName = testResult.getName();
+        int testStatus = testResult.getStatus();
+
+        test.getTest().setStartedTime(getTime(testResult.getStartMillis()));
+        test.getTest().setEndedTime(getTime(testResult.getEndMillis()));
+
+        for (String group : testResult.getMethod().getGroups()) {
+            test.assignCategory(group);
+        }
+
+        if (testStatus == ITestResult.FAILURE) {
+            if (driver != null) {
+                captureScreenshot(driver, testName);
+            }
+            test.log(LogStatus.FAIL, "TEST FAILED: " + testName);
+            test.log(LogStatus.FAIL, testResult.getThrowable());
+
+        } else if (testStatus == ITestResult.SKIP) {
+            test.log(LogStatus.SKIP, "TEST SKIPPED: " + testName);
+        } else if (testStatus == ITestResult.SUCCESS) {
+            test.log(LogStatus.PASS, "TEST PASSED: " + testName);
+        }
+
+        ExtentTestManager.endTest();
+        extent.flush();
     }
 
     public void clickElement(WebElement element) {
@@ -101,5 +169,48 @@ public class Base {
     public void selectByValue(WebElement element, String value) {
         Select select = new Select(element);
         select.selectByValue(value);
+    }
+
+    public void switchToIFrame(WebElement frame) {
+        wait.until(ExpectedConditions.visibilityOf(frame));
+        driver.switchTo().frame(frame);
+    }
+
+    public void switchToParentFrame() {
+        driver.switchTo().defaultContent();
+    }
+
+    public void switchToHandle() {
+        String parentTab = driver.getWindowHandle();
+
+        Set<String> openTabs = driver.getWindowHandles();
+
+        for (String tab : openTabs) {
+            if (!tab.equals(parentTab)) {
+                driver.switchTo().window(tab);
+            }
+        }
+    }
+
+    private static void captureScreenshot(WebDriver driver, String testName) {
+        String absPath = System.getProperty("user.dir");
+        String screenshotFileName = "scree  nshot_" + testName + ".png";
+
+        File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        File screenshotFile = new File(absPath + File.separator + "src" + File.separator + "test"
+                + File.separator + "reports" + File.separator + screenshotFileName);
+
+        try {
+            FileHandler.copy(screenshot, screenshotFile);
+            System.out.println("SCREENSHOT TAKEN");
+        } catch (Exception e) {
+            System.out.println("ERROR TAKING SCREENSHOT: " + e.getMessage());
+        }
+    }
+
+    private static Date getTime(long millis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
+        return calendar.getTime();
     }
 }

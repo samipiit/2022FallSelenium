@@ -1,12 +1,11 @@
 package application.page_library;
 
-import base.Base;
+import application.shared.SharedStepsUI;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.ui.Select;
 
-public class RegistrationFormPage extends Base {
+public class RegistrationFormPage extends SharedStepsUI {
 
     @FindBy (id = "id_gender1")
     public WebElement maleSalutationRadioButton;

@@ -1,11 +1,11 @@
 package application.page_library;
 
-import base.Base;
+import application.shared.SharedStepsUI;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 
-public class AccountPage extends Base {
+public class AccountPage extends SharedStepsUI {
 
     @FindBy (xpath = "//div[@class='header_user_info']//span")
     public WebElement accountButton;

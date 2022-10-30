@@ -12,7 +12,7 @@ public class TestShoppingCart extends Base {
     public void testNavigationToShoppingCart() {
         HomePage homePage = new HomePage();
 
-        ShoppingCartPage shoppingCart = homePage.clickShoppingCartButton();
+        ShoppingCartPage shoppingCart = homePage.systemBar.clickShoppingCartButton();
 
         Assert.assertTrue(isElementDisplayed(shoppingCart.orderSteps));
     }
