@@ -8,22 +8,23 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class TestProducts extends Base {
 
-    @Test
-    public void testNavigateToItemPage() throws IOException {
+    @Test (dataProviderClass = data_providers.DataProviders.class, dataProvider = "testSelectItem")
+    public void testSelectItem(String searchTerm, String index, String expected) {
         HomePage homePage = new HomePage();
 
-        String[] testData = excel.readStringArray(testDataFilePath, "TestProducts");
-        String searchTerm = testData[0];
-        int index = Integer.parseInt(testData[1]);
+//        HashMap<String, String> testData = excel.getDataModel(testDataFilePath, "TestProducts");
+//        String searchTerm = testData.get("searchTerm");
+//        int index = Integer.parseInt(testData.get("index"));
 
         ProductsPage products = homePage.systemBar.doSearch(searchTerm);
-        products.selectProduct(index);
+        products.selectProduct(Integer.parseInt(index));
         switchToIFrame(products.itemIFrame);
 
-        Assert.assertEquals(products.getItemName(), testData[2]);
+        Assert.assertEquals(products.getItemName(), expected);
     }
 
 }

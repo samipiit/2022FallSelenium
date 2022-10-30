@@ -4,6 +4,10 @@
 
     <parameter name="browser" value="firefox"/>
 
+    <listeners>
+        <listener class-name="listeners.AnnotationTransformer"/>
+    </listeners>
+
     <test name="Smoke">
         <groups>
             <run>

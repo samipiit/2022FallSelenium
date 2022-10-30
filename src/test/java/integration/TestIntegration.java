@@ -1,16 +1,19 @@
 package integration;
 
+import annotations.RetryCount;
 import base.Base;
 import config.Config;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import utils.RetryAnalyzer;
 
 import java.io.IOException;
 import java.net.InetAddress;
 
 public class TestIntegration extends Base {
 
-    @Test
+    @RetryCount(2)
+    @Test (retryAnalyzer = RetryAnalyzer.class)
     public void testAppServerConnectivity() {
         try {
             InetAddress host = InetAddress.getByName(prop.getProperty("ip"));

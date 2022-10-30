@@ -23,7 +23,11 @@ public class ProductsPage extends SharedStepsUI {
     }
 
     public void selectProduct(int productIndex) {
-        clickElement(products.get(productIndex));
+        try {
+            clickElement(products.get(productIndex));
+        } catch (IndexOutOfBoundsException e) {
+            clickElement(products.get(products.size() - 1));
+        }
     }
 
     public String getItemName() {

@@ -10,6 +10,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.io.FileHandler;
 import org.openqa.selenium.support.events.EventFiringWebDriver;
 import org.openqa.selenium.support.ui.*;
@@ -20,6 +21,8 @@ import reporting.ExtentManager;
 import reporting.ExtentTestManager;
 import utils.ExcelReader;
 
+import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -32,12 +35,14 @@ public class Base {
 
     public static WebDriver webDriver;
     public static WebDriver driver;
+    public static JavascriptExecutor jsDriver;
     public static ExtentReports extent;
     public static WebDriverWait wait;
     public static Wait<WebDriver> flWait;
     public static Properties prop;
     public static ExcelReader excel;
     public static String testDataFilePath;
+    private static Robot robot;
 
     public Base() {
         prop = Config.loadProperties();
@@ -192,9 +197,44 @@ public class Base {
         }
     }
 
+    public void jsClickOnElement(WebElement element) {
+        jsDriver = (JavascriptExecutor) (driver);
+        jsDriver.executeScript("arguments[0].click();", element);
+    }
+
+    public void safeClickOnElement(WebElement element) {
+        try {
+            clickElement(element);
+        } catch (ElementClickInterceptedException | StaleElementReferenceException | ElementNotVisibleException e) {
+            System.out.println("Unable to click - trying again");
+            jsClickOnElement(element);
+        } catch (TimeoutException | NoSuchElementException e) {
+            System.out.println("Unable to locate element - check element locator and ensure element is being made available");
+        }
+
+        System.out.printf("Successfully clicked on %s %n", element);
+    }
+
+    public WebElement setElementAttributeValue(String attribute, String value, By by) {
+        jsDriver = (JavascriptExecutor) (driver);
+        jsDriver.executeScript("arguments[0].setAttribute('" + attribute + "', '" + value + "')", driver.findElement(by));
+
+        return driver.findElement(by);
+    }
+
+    public void pressEnterKey() {
+        try {
+            robot = new Robot();
+            robot.keyPress(KeyEvent.VK_ENTER);
+            robot.keyRelease(KeyEvent.VK_ENTER);
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void captureScreenshot(WebDriver driver, String testName) {
         String absPath = System.getProperty("user.dir");
-        String screenshotFileName = "scree  nshot_" + testName + ".png";
+        String screenshotFileName = "screenshot_" + testName + ".png";
 
         File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
         File screenshotFile = new File(absPath + File.separator + "src" + File.separator + "test"

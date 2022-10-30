@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class ExcelReader {
@@ -24,6 +25,41 @@ public class ExcelReader {
     private int numberOfRows, numberOfCol, rowNum;
 
     // region Readers
+    public HashMap<String, String> getDataModel(String filePath, String sheetName) {
+        HashMap<String, String> data = new HashMap<>();
+
+        try {
+            FileInputStream fis = new FileInputStream(filePath);
+            workbook = new XSSFWorkbook(fis);
+        } catch (IOException e) {
+            System.out.println("Unable to load file - Check file path, or if the file actually exists in file path directory");
+            e.printStackTrace();
+        }
+
+        sheet = workbook.getSheet(sheetName);
+        numberOfRows = sheet.getLastRowNum();
+        numberOfCol = sheet.getRow(numberOfRows).getLastCellNum();
+
+        String[][] tempData = new String[numberOfRows][numberOfCol];
+
+        for (int i = 1; i <= numberOfRows; i++) {
+            row = sheet.getRow(i);
+            for (int j = 0; j < 2; j++) {
+                cell = row.getCell(j);
+                String cellData = getCellValue(cell);
+                tempData[i-1][j] = cellData;
+            }
+        }
+
+        for (String[] row: tempData) {
+            String key = row[0];
+            String value = row[1];
+            data.put(key, value);
+        }
+
+        return data;
+    }
+
     /**
      * @throws IOException
      *
