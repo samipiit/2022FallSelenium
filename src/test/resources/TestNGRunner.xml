@@ -1,0 +1,25 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Smoke Test Suite" verbose="1">
+
+    <parameter name="browser" value="firefox"/>
+
+    <listeners>
+        <listener class-name="listeners.AnnotationTransformer"/>
+    </listeners>
+
+    <test name="Smoke">
+        <groups>
+            <run>
+                <include name="regression"/>
+                <include name="authentication"/>
+                <exclude name="shopping_cart"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="system.authentication.TestAuthentication"/>
+            <class name="system.shopping_cart.TestShoppingCart"/>
+        </classes>
+    </test>
+
+</suite>
