@@ -1,14 +1,10 @@
 package system.purchasing;
 
 import application.page_library.HomePage;
-import application.page_library.ItemPage;
 import application.page_library.ProductsPage;
 import base.Base;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import java.io.IOException;
-import java.util.HashMap;
 
 public class TestProducts extends Base {
 
@@ -22,9 +18,22 @@ public class TestProducts extends Base {
 
         ProductsPage products = homePage.systemBar.doSearch(searchTerm);
         products.selectProduct(Integer.parseInt(index));
-        switchToIFrame(products.itemIFrame);
+        switchToIFrame(products.itemiFrame);
 
-        Assert.assertEquals(products.getItemName(), expected);
+        Assert.assertEquals(products.getItemNameQuickViewiFrame(), expected);
+    }
+
+    @Test
+    public void testAddItemToCartFromProductsPage() throws InterruptedException {
+        HomePage homePage = new HomePage();
+        ProductsPage productsPage = homePage.systemBar.doSearch("Dress");
+
+        productsPage.hoverClickAddToCart(2);
+
+        String expectedText = "Product successfully added to your shopping cart";
+        String actualText = getTextFromElement(productsPage.productNameModalWindow).trim();
+        Assert.assertEquals(actualText, expectedText);
+
     }
 
 }

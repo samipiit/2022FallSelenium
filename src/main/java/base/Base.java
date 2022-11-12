@@ -139,6 +139,13 @@ public class Base {
         element.click();
     }
 
+    public void hoverOverElement(WebElement element) {
+        Actions actions = new Actions(driver);
+
+        wait.until(ExpectedConditions.visibilityOf(element));
+        actions.moveToElement(element).build().perform();
+    }
+
     public void sendKeysToElement(WebElement element, String keys) {
         wait.until(ExpectedConditions.visibilityOf(element));
         element.sendKeys(keys);
@@ -220,6 +227,8 @@ public class Base {
 
         System.out.printf("Successfully clicked on %s %n", element);
     }
+
+
 
     public WebElement setElementAttributeValue(String attribute, String value, By by) {
         jsDriver = (JavascriptExecutor) (driver);
